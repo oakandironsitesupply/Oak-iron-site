@@ -522,11 +522,28 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
     function calcOverage(jobId) {
       const lbs = prompt('Enter total weight in pounds:');
       if (!lbs) return;
-      const over = Math.max(0, parseInt(lbs) - 4000);
-      const fee = +(over / 2000 * 95).toFixed(2);
+      const days = prompt('Enter extra days beyond package:');
+      const boards = prompt('Enter number of driveway boards:');
+      
+      const overLbs = Math.max(0, parseInt(lbs) - 4000);
+      const overageFee = +(overLbs / 2000 * 95).toFixed(2);
+      const daysFee = +(parseInt(days || 0) * 15).toFixed(2);
+      const boardsFee = +(parseInt(boards || 0) > 0 ? 20 : 0).toFixed(2);
+      const total = overageFee + daysFee + boardsFee;
+      
       const job = state.jobs.find(j => j.id === jobId);
-      if (job) { job.overage = fee; job.weight = parseInt(lbs); save(); renderJobs(); }
-      alert(`Overage: ${over} lbs over 2 tons = $${fee}`);
+      if (job) { 
+        job.overage = overageFee; 
+        job.extraDays = parseInt(days || 0);
+        job.daysFee = daysFee;
+        job.boards = parseInt(boards || 0);
+        job.boardsFee = boardsFee;
+        job.weight = parseInt(lbs); 
+        job.feesTotal = total;
+        save(); 
+        renderJobs(); 
+      }
+      alert(`Weight Overage: $${overageFee}\nExtra Days: $${daysFee}\nDriveway Boards: $${boardsFee}\n\nTotal Fees: $${total}`);
     }
 
     function renderReports() {
