@@ -48,6 +48,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
     <div class="p-4 max-w-6xl mx-auto">
       <!-- FLEET -->
       <div id="tab-fleet" class="space-y-4">
+        <button onclick="clearAllData()" class="text-xs px-3 py-1 rounded border border-red-800 text-red-300">Clear All Data</button>
         <h2 class="font-black text-lg">Fleet Status</h2>
         <div id="fleet-list" class="grid sm:grid-cols-3 gap-3"></div>
       </div>
@@ -211,8 +212,38 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
           <div class="font-black text-lg">${b.id}</div>
           <div class="text-xs mt-1 px-2 py-1 rounded inline-block ${b.status==='yard'?'bg-green-900/50 text-green-300':'bg-orange-900/50 text-orange-300'}">${b.status === 'yard' ? 'Available' : 'On Site'}</div>
           ${b.jobId ? `<div class="text-xs text-stone-400 mt-1">Job: ${b.jobId}</div>` : ''}
+          <button onclick="toggleBin('${b.id}')" class="mt-2 text-xs px-3 py-1 rounded border border-[#3B5030] hover:bg-[#232B21]">Toggle Status</button>
+          <button onclick="freeBinEarly('${b.id}')" class="mt-1 text-xs px-3 py-1 rounded border border-green-800 text-green-300">Free Early</button>
         </div>
       `).join('');
+    }
+
+    
+    async function freeBinEarly(id) {
+      const bin = state.bins.find(b => b.id === id);
+      if (!bin) return;
+      bin.status = 'yard';
+      bin.jobId = null;
+      save();
+      await updateBinStatus(id, 'yard', null);
+      renderFleet();
+      alert(id + ' marked available');
+    }
+
+    function toggleBin(id) {
+      const bin = state.bins.find(b => b.id === id);
+      if (!bin) return;
+      bin.status = bin.status === 'yard' ? 'on-site' : 'yard';
+      if (bin.status === 'yard') bin.jobId = null;
+      save();
+      updateBinStatus(id, bin.status, bin.jobId);
+      renderFleet();
+    }
+
+    function clearAllData() {
+      if (!confirm('Clear all local data? This removes sample jobs.')) return;
+      localStorage.removeItem('oi_admin');
+      location.reload();
     }
 
     

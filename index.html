@@ -341,6 +341,26 @@
     };
     function save() { localStorage.setItem('oi_bookings', JSON.stringify(state.bookings)); }
 
+    
+    async function checkDateAvailability() {
+      const dateInput = document.getElementById('date');
+      if (!dateInput) return;
+      try {
+        const { data } = await supabase.from('bins').select('*');
+        const bins = data || [];
+        const availableCount = bins.filter(b => b.Status === 'yard' || b.status === 'yard').length;
+        const statusEl = document.getElementById('avail-status');
+        const bookBtn = document.querySelector('#step4 button');
+        if (availableCount === 0) {
+          if (statusEl) statusEl.textContent = 'All dumpsters booked — Call (330) 333-5414';
+          if (bookBtn) { bookBtn.disabled = true; bookBtn.textContent = 'Call to Book'; }
+        } else {
+          if (statusEl) statusEl.textContent = availableCount + ' Dumpster' + (availableCount>1?'s':'') + ' Available';
+          if (bookBtn) { bookBtn.disabled = false; bookBtn.textContent = 'Submit Order & Request Invoice'; }
+        }
+      } catch(e) {}
+    }
+
     async function updateBinAvailability() {
       // Check Supabase for bin status
       try {
@@ -502,6 +522,7 @@
       document.getElementById('wizard').innerHTML = `<div class="text-center py-10"><h3 class="text-2xl font-black text-[#A3C78C]">Booking Confirmed!</h3><p class="mt-2">Receipt #${id}</p><p class="text-sm mt-4">Your order is submitted. We will send a QuickBooks invoice to the contact provided. Invoice must be paid prior to delivery. Payment information is kept on file for any overages. Call (330) 333-5414 with questions.</p></div>`;
       renderAdmin();
       updateBinAvailability();
+      checkDateAvailability();
     }
     function toggleAdmin() {
       document.getElementById('customer-view').classList.toggle('hidden');
@@ -613,6 +634,7 @@
       alert(`Pickup complete. Overage: $${overage.toFixed(2)} (${over} lbs over).`);
       renderAdmin();
       updateBinAvailability();
+      checkDateAvailability();
     }
     document.addEventListener('DOMContentLoaded', ()=>{
       const d = new Date(); d.setDate(d.getDate()+1);
@@ -620,6 +642,7 @@
       if(dateIn) dateIn.value = d.toISOString().split('T')[0];
       updateTotal();
       updateBinAvailability();
+      checkDateAvailability();
       if(state.bookings.length===0){
         state.bookings.push({
           id:'OI-SAMPLE', status:'On-Site', bin:'BIN-01', package:'Standard 5-Day',
