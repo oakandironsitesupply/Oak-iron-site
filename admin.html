@@ -187,19 +187,28 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
       const { data, error } = await sb.from('Bookings').select('*').order('id', { ascending: false });
       if (error) console.error('Load bookings error', error);
       if (data) {
-        state.jobs = data.map(b => ({
-          id: b.id,
-          name: b.Name || b.name,
-          phone: b.Phone || b.phone,
-          address: b.Address || b.address,
-          package: b.Package || b.package,
-          date: b.Date || b.date,
-          total: b.Total || b.total || 0,
-          status: b.Status || b.status || 'Confirmed',
-          notes: b.Notes || b.notes || '',
-          bin: '—',
-          overage: 0
-        }));
+        state.jobs = data.map(b => {
+          const existing = state.jobs.find(j => j.id === b.id) || {};
+          return {
+            id: b.id,
+            name: b.Name || b.name,
+            phone: b.Phone || b.phone,
+            address: b.Address || b.address,
+            package: b.Package || b.package,
+            date: b.Date || b.date,
+            total: b.Total || b.total || 0,
+            status: b.Status || b.status || 'Confirmed',
+            notes: b.Notes || b.notes || '',
+            bin: existing.bin || '—',
+            weight: existing.weight || 0,
+            overage: existing.overage || 0,
+            extraDays: existing.extraDays || 0,
+            daysFee: existing.daysFee || 0,
+            boards: existing.boards || 0,
+            boardsFee: existing.boardsFee || 0,
+            feesTotal: existing.feesTotal || 0
+          };
+        });
         save();
         renderJobs();
       }
@@ -274,11 +283,12 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
             </div>
             <div class="text-right">
               <div class="text-right text-xs space-y-1">
-                <div class="text-stone-400">Base: $${(j.total||0).toFixed(2)}</div>
-                ${j.overage > 0 ? `<div class="text-red-300">Overage: $${j.overage.toFixed(2)}</div>` : ''}
+                <div class="text-stone-400">Package: $${((j.total||0) / 1.0675).toFixed(2)}</div>
+                <div class="text-stone-400">Tax: $${((j.total||0) - (j.total||0) / 1.0675).toFixed(2)}</div>
+                ${j.overage > 0 ? `<div class="text-red-300">Weight: $${j.overage.toFixed(2)}</div>` : ''}
                 ${j.daysFee > 0 ? `<div class="text-orange-300">Days: $${j.daysFee.toFixed(2)}</div>` : ''}
                 ${j.boardsFee > 0 ? `<div class="text-yellow-300">Boards: $${j.boardsFee.toFixed(2)}</div>` : ''}
-                <div class="text-sm font-bold text-[#A3C78C]">Total: $${((j.total||0) + (j.feesTotal||0)).toFixed(2)}</div>
+                <div class="text-sm font-bold text-[#A3C78C] border-t border-[#3B5030] pt-1">Total: $${((j.total||0) + (j.feesTotal||0)).toFixed(2)}</div>
               </div>
               <div class="text-xs text-stone-400">${j.date || ''}</div>
             </div>
