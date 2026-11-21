@@ -328,7 +328,16 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
                 </select>
               </div>
             </div>
-            
+          </div>
+          <div class="flex justify-end pt-2 border-t border-[#3B5030]">
+            <div class="text-right text-xs space-y-1">
+              <div class="text-stone-400">Package: $${((j.total||0) / 1.0675).toFixed(2)}</div>
+              <div class="text-stone-400">Tax: $${((j.total||0) - (j.total||0) / 1.0675).toFixed(2)}</div>
+              ${j.overage > 0 ? `<div class="text-red-300">Weight: $${j.overage.toFixed(2)}</div>` : ''}
+              ${j.daysFee > 0 ? `<div class="text-orange-300">Days: $${j.daysFee.toFixed(2)}</div>` : ''}
+              ${j.boardsFee > 0 ? `<div class="text-yellow-300">Boards: $${j.boardsFee.toFixed(2)}</div>` : ''}
+              <div class="text-sm font-bold text-[#A3C78C]">Total: $${((j.total||0) + (j.feesTotal||0)).toFixed(2)}</div>
+            </div>
           </div>
         </div>
       `).join('') || '<p class="text-stone-500">No jobs yet.</p>';
