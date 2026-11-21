@@ -215,6 +215,14 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
       `).join('');
     }
 
+    
+    function deleteJob(id) {
+      if (!confirm('Delete this job?')) return;
+      state.jobs = state.jobs.filter(j => j.id !== id);
+      save();
+      renderJobs();
+    }
+
     function renderJobs() {
       const el = document.getElementById('jobs-list');
       el.innerHTML = state.jobs.map(j => `
@@ -236,6 +244,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
           </div>
           <div class="mt-2">
             <button onclick="calcOverage('${j.id}')" class="text-xs px-2 py-1 rounded border border-[#3B5030] hover:bg-[#232B21]">Calc Overage</button>
+            <button onclick="deleteJob('${j.id}')" class="text-xs px-2 py-1 rounded border border-red-800 text-red-300 hover:bg-red-900/50">Delete</button>
           </div>
         </div>
       `).join('') || '<p class="text-stone-500">No jobs yet.</p>';
@@ -482,22 +491,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
       `;
     }
 
-    // Seed sample data if empty
-    if (state.customers.length === 0) {
-      state.customers.push({
-        id: 'c1', name: 'Marcus Vance', phone: '(330) 555-0194', email: 'mvance@example.com',
-        type: 'Contractor', balance: 0, customPrice: 375,
-        addresses: [{ street: '4182 Mahoning Ave, Austintown', notes: 'Place by garage. Gate code: 1234' }],
-        jobs: [{ date: '2026-11-15', package: 'Standard 5-Day', total: 395 }]
-      });
-      state.jobs.push({
-        id: 'j1', name: 'Marcus Vance', package: 'Standard 5-Day', address: '4182 Mahoning Ave',
-        date: '2026-11-15', total: 395, status: 'On-Site', bin: 'BIN-01', overage: 0
-      });
-      state.bins[0].status = 'on-site';
-      state.bins[0].jobId = 'j1';
-      save();
-    }
+
   </script>
 </body>
 </html>
