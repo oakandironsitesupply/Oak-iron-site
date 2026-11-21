@@ -279,8 +279,11 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
     }
 
     function deleteJob(id) {
-      if (!confirm('Delete this job?')) return;
-      state.jobs = state.jobs.filter(j => j.id !== id);
+      const confirm = prompt('Type DELETE to confirm:');
+      if (confirm !== 'DELETE') return;
+      state.jobs = state.jobs.filter(j => String(j.id) !== String(id));
+      delete feesStore[id];
+      saveFees();
       save();
       renderJobs();
     }
@@ -294,8 +297,11 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
               <div class="font-bold truncate">${j.name}</div>
               <div class="text-xs text-stone-400 truncate">${j.package || ''} • ${j.address || ''}</div>
             </div>
-            <div class="text-right shrink-0">
-              <div class="text-right text-xs space-y-1">
+            <button onclick="deleteJob('${j.id}')" class="text-xs px-2 py-1 rounded border border-red-800 text-red-300 hover:bg-red-900/50 shrink-0">Delete</button>
+          </div>
+          <div class="flex justify-between items-end gap-4">
+            <div class="flex flex-wrap gap-2 text-xs">
+              <div class="text-right text-xs space-y-1 shrink-0">
                 <div class="text-stone-400">Package: $${((j.total||0) / 1.0675).toFixed(2)}</div>
                 <div class="text-stone-400">Tax: $${((j.total||0) - (j.total||0) / 1.0675).toFixed(2)}</div>
                 ${j.overage > 0 ? `<div class="text-red-300">Weight: $${j.overage.toFixed(2)}</div>` : ''}
@@ -334,7 +340,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
                 </select>
               </div>
             </div>
-            <button onclick="deleteJob('${j.id}')" class="text-xs px-2 py-1 rounded border border-red-800 text-red-300 hover:bg-red-900/50">Delete</button>
+            
           </div>
         </div>
       `).join('') || '<p class="text-stone-500">No jobs yet.</p>';
@@ -362,7 +368,8 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
     }
 
     function deleteCustomer(id) {
-      if (!confirm('Delete this customer?')) return;
+      const confirm = prompt('Type DELETE to confirm:');
+      if (confirm !== 'DELETE') return;
       state.customers = state.customers.filter(c => c.id !== id);
       save();
       renderCustomers();
@@ -474,6 +481,15 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
       renderCustomers();
     }
 
+    
+    function deleteQuote(id) {
+      const confirm = prompt('Type DELETE to confirm:');
+      if (confirm !== 'DELETE') return;
+      state.quotes = state.quotes.filter(q => q.id !== id);
+      save();
+      renderQuotes();
+    }
+
     function renderQuotes() {
       const el = document.getElementById('quotes-list');
       el.innerHTML = state.quotes.map(q => `
@@ -482,12 +498,15 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
             <div class="font-bold text-sm">${q.name} — $${q.amount}</div>
             <div class="text-xs text-stone-400">${q.note || ''} • ${q.date}</div>
           </div>
-          <select onchange="updateQuoteStatus('${q.id}', this.value)" class="text-xs px-2 py-1 rounded bg-[#0F1410] border border-[#3B5030]">
-            <option ${q.status==='Sent'?'selected':''}>Sent</option>
-            <option ${q.status==='Followed Up'?'selected':''}>Followed Up</option>
-            <option ${q.status==='Won'?'selected':''}>Won</option>
-            <option ${q.status==='Lost'?'selected':''}>Lost</option>
-          </select>
+          <div class="flex items-center gap-2">
+            <select onchange="updateQuoteStatus('${q.id}', this.value)" class="text-xs px-2 py-1 rounded bg-[#0F1410] border border-[#3B5030]">
+              <option ${q.status==='Sent'?'selected':''}>Sent</option>
+              <option ${q.status==='Followed Up'?'selected':''}>Followed Up</option>
+              <option ${q.status==='Won'?'selected':''}>Won</option>
+              <option ${q.status==='Lost'?'selected':''}>Lost</option>
+            </select>
+            <button onclick="deleteQuote('${q.id}')" class="text-xs px-2 py-1 rounded border border-red-800 text-red-300">Delete</button>
+          </div>
         </div>
       `).join('') || '<p class="text-stone-500">No quotes yet.</p>';
     }
