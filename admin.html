@@ -184,6 +184,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
     
     async function loadBookings() {
       const { data, error } = await supabase.from('bookings').select('*').order('create', { ascending: false });
+      if (error) console.error('Load bookings error', error);
       if (data) {
         state.jobs = data.map(b => ({
           id: b.id,
@@ -249,7 +250,9 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
     
     
     async function updateBinStatus(binId, status, jobId) {
-      await supabase.from('bins').upsert({ id: binId, status, job_id: jobId }, { onConflict: 'id' });
+      try {
+        await supabase.from('bins').upsert({ id: binId, Status: status, Job_id: jobId }, { onConflict: 'id' });
+      } catch(e) { console.log('Bin update failed', e); }
     }
 
     function deleteJob(id) {

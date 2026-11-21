@@ -496,7 +496,7 @@
           Status: 'Confirmed',
           Notes: booking.notes || ''
         });
-      } catch(e) { console.log('Supabase insert failed', e); }
+      } catch(e) { console.error('Supabase insert failed', e); alert('Booking saved locally but sync failed. Check console.'); }
 
       save();
 
