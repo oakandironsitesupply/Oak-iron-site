@@ -278,9 +278,12 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
       } catch(e) { console.log('Bin update failed', e); }
     }
 
-    function deleteJob(id) {
+    async function deleteJob(id) {
       const confirm = prompt('Type DELETE to confirm:');
       if (confirm !== 'DELETE') return;
+      try {
+        await sb.from('Bookings').delete().eq('id', id);
+      } catch(e) { console.log('Delete failed', e); }
       state.jobs = state.jobs.filter(j => String(j.id) !== String(id));
       delete feesStore[id];
       saveFees();
