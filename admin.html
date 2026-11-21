@@ -216,6 +216,11 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
     }
 
     
+    
+    async function updateBinStatus(binId, status, jobId) {
+      await supabase.from('bins').upsert({ id: binId, status, job_id: jobId }, { onConflict: 'id' });
+    }
+
     function deleteJob(id) {
       if (!confirm('Delete this job?')) return;
       state.jobs = state.jobs.filter(j => j.id !== id);
@@ -250,6 +255,14 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
       `).join('') || '<p class="text-stone-500">No jobs yet.</p>';
     }
 
+    
+    function deleteCustomer(id) {
+      if (!confirm('Delete this customer?')) return;
+      state.customers = state.customers.filter(c => c.id !== id);
+      save();
+      renderCustomers();
+    }
+
     function renderCustomers() {
       const q = (document.getElementById('cust-search')?.value || '').toLowerCase();
       const el = document.getElementById('customers-list');
@@ -269,6 +282,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
             </div>
           </div>
           <div class="text-xs text-stone-500 mt-2">${(c.addresses||[]).length} address(es) • ${c.customPrice ? 'Custom: $'+c.customPrice : 'Standard pricing'}</div>
+          <button onclick="event.stopPropagation(); deleteCustomer('${c.id}')" class="mt-2 text-xs px-2 py-1 rounded border border-red-800 text-red-300 hover:bg-red-900/50">Delete</button>
         </div>
       `).join('') || '<p class="text-stone-500">No customers yet. Click "+ New Customer" to add one.</p>';
     }

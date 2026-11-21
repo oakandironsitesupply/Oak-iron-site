@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Oak & Iron Site & Supply LLC | Roll-Off Dumpster Rentals — Mahoning Valley, OH</title>
@@ -9,6 +10,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <script>
+    const SUPABASE_URL = 'https://ribqztgrxvnjsehchjph.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_pLFT-wV3uKWNDquv-hb0jQ_u1V6RN8c';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     tailwind.config = {
       theme: {
         extend: {
@@ -336,7 +341,14 @@
     };
     function save() { localStorage.setItem('oi_bookings', JSON.stringify(state.bookings)); }
 
-    function updateBinAvailability() {
+    async function updateBinAvailability() {
+      // Check Supabase for bin status
+      try {
+        const { data } = await supabase.from('bins').select('*');
+        if (data && data.length) {
+          state.bins = data.map(b => ({ id: b.id, status: b.status || 'yard', jobId: b.job_id }));
+        }
+      } catch(e) {}
       const available = state.bins.filter(b => b.status === 'yard').length;
       const statusEl = document.getElementById('avail-status');
       const detailEl = document.getElementById('avail-detail');
@@ -450,6 +462,22 @@
         total:sub+tax, weight:null, overage:0
       };
       state.bookings.unshift(booking);
+
+      // Save to Supabase
+      try {
+        await supabase.from('bookings').insert({
+          Name: booking.name,
+          Phone: booking.phone,
+          Email: booking.email,
+          Address: booking.address,
+          Package: booking.package,
+          Date: booking.date,
+          Total: sub + tax,
+          Status: 'Confirmed',
+          Notes: booking.notes || ''
+        });
+      } catch(e) { console.log('Supabase insert failed', e); }
+
       save();
 
       // --- Notifications ---
