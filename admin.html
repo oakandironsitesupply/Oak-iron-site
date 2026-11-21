@@ -279,6 +279,12 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
             ${j.overage > 0 ? `<span class="px-2 py-1 rounded bg-red-900/50">Overage: $${j.overage}</span>` : ''}
           </div>
           <div class="mt-2">
+            <select onchange="assignBin('${j.id}', this.value)" class="text-xs px-2 py-1 rounded bg-[#232B21] border border-[#3B5030]">
+              <option value="">Assign Bin</option>
+              <option value="BIN-01" ${j.bin==='BIN-01'?'selected':''}>BIN-01</option>
+              <option value="BIN-02" ${j.bin==='BIN-02'?'selected':''}>BIN-02</option>
+              <option value="BIN-03" ${j.bin==='BIN-03'?'selected':''}>BIN-03</option>
+            </select>
             <button onclick="calcOverage('${j.id}')" class="text-xs px-2 py-1 rounded border border-[#3B5030] hover:bg-[#232B21]">Calc Overage</button>
             <button onclick="deleteJob('${j.id}')" class="text-xs px-2 py-1 rounded border border-red-800 text-red-300 hover:bg-red-900/50">Delete</button>
           </div>
@@ -287,6 +293,22 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
     }
 
     
+    
+    function assignBin(jobId, binId) {
+      if (!binId) return;
+      const job = state.jobs.find(j => j.id === jobId);
+      const bin = state.bins.find(b => b.id === binId);
+      if (job && bin) {
+        job.bin = binId;
+        bin.status = 'on-site';
+        bin.jobId = jobId;
+        save();
+        updateBinStatus(binId, 'on-site', jobId);
+        renderJobs();
+        renderFleet();
+      }
+    }
+
     function deleteCustomer(id) {
       if (!confirm('Delete this customer?')) return;
       state.customers = state.customers.filter(c => c.id !== id);
