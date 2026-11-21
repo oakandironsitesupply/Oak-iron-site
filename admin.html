@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oak & Iron — Admin CRM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    const SUPABASE_URL = 'https://ribqztgrxvnjsehchjph.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_pLFT-wV3uKWNDquv-hb0jQ_u1V6RN8c';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui','sans-serif'] } } } };</script>
+  <style>.tab-active { background: #4A633C; color: white; border-color: #628050; }</style>
+</head>
+<body class="bg-[#0F1410] text-stone-200 font-sans">
+  <!-- Login -->
+  <div id="login-screen" class="min-h-screen flex items-center justify-center">
+    <div class="bg-[#1A2018] p-8 rounded-2xl border border-[#3B5030] w-full max-w-sm text-center">
+      <h1 class="text-xl font-black text-white mb-2">Oak & Iron Admin</h1>
+      <p class="text-xs text-stone-400 mb-4">Enter password to continue</p>
+      <input id="pw" type="password" placeholder="Password" class="w-full px-4 py-3 rounded-xl bg-[#0F1410] border border-[#3B5030] text-white mb-3" onkeydown="if(event.key==='Enter')checkPw()" />
+      <button onclick="checkPw()" class="w-full py-3 rounded-xl bg-[#4A633C] text-white font-bold">Enter</button>
+      <p id="pw-error" class="text-xs text-red-400 mt-2 hidden">Incorrect password</p>
+    </div>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div id="admin-view" class="hidden min-h-screen">
+    <div class="bg-[#131812] border-b border-[#2E382B] p-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 class="font-black text-xl text-white">Oak & Iron Dispatch</h1>
+          <p class="text-xs text-stone-400">Fleet • Jobs • Customers • Quotes • Messages</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button onclick="switchTab('fleet')" class="tab-btn px-3 py-1 rounded text-sm font-bold border border-[#3B5030]">Fleet</button>
+          <button onclick="switchTab('jobs')" class="tab-btn px-3 py-1 rounded text-sm font-bold border border-[#3B5030]">Jobs</button>
+          <button onclick="switchTab('customers')" class="tab-btn px-3 py-1 rounded text-sm font-bold border border-[#3B5030]">Customers</button>
+          <button onclick="switchTab('quotes')" class="tab-btn px-3 py-1 rounded text-sm font-bold border border-[#3B5030]">Quotes</button>
+          <button onclick="switchTab('messages')" class="tab-btn px-3 py-1 rounded text-sm font-bold border border-[#3B5030]">Messages</button>
+          <button onclick="switchTab('reports')" class="tab-btn px-3 py-1 rounded text-sm font-bold border border-[#3B5030]">Reports</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 max-w-6xl mx-auto">
+      <!-- FLEET -->
+      <div id="tab-fleet" class="space-y-4">
+        <h2 class="font-black text-lg">Fleet Status</h2>
+        <div id="fleet-list" class="grid sm:grid-cols-3 gap-3"></div>
+      </div>
+
+      <!-- JOBS -->
+      <div id="tab-jobs" class="hidden space-y-4">
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030] space-y-2">
+          <h3 class="font-bold text-sm">Add Job from Email</h3>
+          <div class="grid sm:grid-cols-2 gap-2">
+            <input id="job-name" placeholder="Customer name" class="px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm" />
+            <input id="job-phone" placeholder="Phone" class="px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm" />
+          </div>
+          <input id="job-address" placeholder="Address" class="w-full px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm" />
+          <div class="grid sm:grid-cols-3 gap-2">
+            <select id="job-package" class="px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm">
+              <option value="Weekend Warrior">Weekend Warrior - $325</option>
+              <option value="Standard 5-Day" selected>Standard 5-Day - $395</option>
+              <option value="Extended 10-Day">Extended 10-Day - $475</option>
+            </select>
+            <input id="job-date" type="date" class="px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm" />
+            <input id="job-total" type="number" placeholder="Total" class="px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm" />
+          </div>
+          <button onclick="addJob()" class="px-4 py-2 rounded bg-[#4A633C] text-white text-sm font-bold">Add Job</button>
+        </div>
+        <h2 class="font-black text-lg">Jobs / Dispatch</h2>
+        <div id="jobs-list" class="space-y-3"></div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div id="tab-customers" class="hidden space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="font-black text-lg">Customers</h2>
+          <button onclick="addNewCustomer()" class="px-3 py-1 rounded bg-[#4A633C] text-white text-sm font-bold">+ New Customer</button>
+        </div>
+        <input id="cust-search" placeholder="Search name, phone, or email..." class="w-full px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030]" oninput="renderCustomers()" />
+        <div id="customers-list" class="space-y-3"></div>
+      </div>
+
+      <!-- QUOTES -->
+      <div id="tab-quotes" class="hidden space-y-4">
+        <h2 class="font-black text-lg">Quotes</h2>
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030] space-y-2">
+          <div class="grid sm:grid-cols-2 gap-2">
+            <input id="q-name" placeholder="Customer name" class="px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm" />
+            <input id="q-phone" placeholder="Phone" class="px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm" />
+          </div>
+          <input id="q-amount" type="number" placeholder="Quote amount" class="w-full px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm" />
+          <textarea id="q-note" rows="2" placeholder="Notes / placement details" class="w-full px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm"></textarea>
+          <button onclick="addQuote()" class="px-4 py-2 rounded bg-[#4A633C] text-white text-sm font-bold">Save Quote</button>
+        </div>
+        <div id="quotes-list" class="space-y-2"></div>
+      </div>
+
+      <!-- MESSAGES -->
+      <div id="tab-messages" class="hidden space-y-4">
+        <h2 class="font-black text-lg">Messages & Notes</h2>
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030] space-y-2">
+          <select id="msg-template" class="w-full px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm" onchange="fillTemplate()">
+            <option value="">Select template...</option>
+            <option value="drop">Dumpster delivered</option>
+            <option value="pickup">Pickup scheduled</option>
+            <option value="overage">Overage notice</option>
+            <option value="custom">Custom message</option>
+          </select>
+          <textarea id="msg-body" rows="3" placeholder="Message text..." class="w-full px-3 py-2 rounded bg-[#0F1410] border border-[#3B5030] text-sm"></textarea>
+          <button onclick="logMessage()" class="px-4 py-2 rounded bg-[#4A633C] text-white text-sm font-bold">Log Message</button>
+        </div>
+        <div id="messages-list" class="space-y-2 text-sm"></div>
+      </div>
+
+      <!-- REPORTS -->
+      <div id="tab-reports" class="hidden space-y-4">
+        <h2 class="font-black text-lg">Reports</h2>
+        <div id="reports-content" class="grid sm:grid-cols-3 gap-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Modal -->
+  <div id="cust-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+    <div class="bg-[#1A2018] p-6 rounded-2xl border border-[#3B5030] w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="modal-name" class="font-black text-lg text-white"></h3>
+        <button onclick="closeModal()" class="text-stone-400 hover:text-white text-2xl leading-none">&times;</button>
+      </div>
+      <div id="modal-body" class="space-y-4 text-sm"></div>
+    </div>
+  </div>
+
+  <script>
+    const ADMIN_PASSWORD = 'oakiron2026';
+    const TEMPLATES = {
+      drop: 'Dumpster has been delivered. Placement photo noted.',
+      pickup: 'Pickup is scheduled. Please ensure the area is clear.',
+      overage: 'Weight ticket is ready. Overage will be billed at $95/ton.'
+    };
+
+    let state = JSON.parse(localStorage.getItem('oi_admin') || 'null') || {
+      bins: [
+        { id: 'BIN-01', status: 'yard', jobId: null },
+        { id: 'BIN-02', status: 'yard', jobId: null },
+        { id: 'BIN-03', status: 'yard', jobId: null }
+      ],
+      jobs: [],
+      customers: [],
+      quotes: [],
+      messages: []
+    };
+
+    function save() { localStorage.setItem('oi_admin', JSON.stringify(state)); }
+
+    function checkPw() {
+      if (document.getElementById('pw').value === ADMIN_PASSWORD) {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('admin-view').classList.remove('hidden');
+        renderAll();
+      loadBookings();
+      } else {
+        document.getElementById('pw-error').classList.remove('hidden');
+      }
+    }
+
+    function switchTab(t) {
+      ['fleet','jobs','customers','quotes','messages','reports'].forEach(id => {
+        document.getElementById('tab-'+id).classList.add('hidden');
+      });
+      document.getElementById('tab-'+t).classList.remove('hidden');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+      event.target.classList.add('tab-active');
+      if (t === 'reports') renderReports();
+    }
+
+    
+    async function loadBookings() {
+      const { data, error } = await supabase.from('bookings').select('*').order('create', { ascending: false });
+      if (data) {
+        state.jobs = data.map(b => ({
+          id: b.id,
+          name: b.Name || b.name,
+          phone: b.Phone || b.phone,
+          address: b.Address || b.address,
+          package: b.Package || b.package,
+          date: b.Date || b.date,
+          total: b.Total || b.total || 0,
+          status: b.Status || b.status || 'Confirmed',
+          notes: b.Notes || b.notes || '',
+          bin: '—',
+          overage: 0
+        }));
+        save();
+        renderJobs();
+      }
+    }
+
+    function renderAll() { renderFleet(); renderJobs(); renderCustomers(); renderQuotes(); renderMessages(); }
+
+    function renderFleet() {
+      const el = document.getElementById('fleet-list');
+      el.innerHTML = state.bins.map(b => `
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030] text-center">
+          <div class="font-black text-lg">${b.id}</div>
+          <div class="text-xs mt-1 px-2 py-1 rounded inline-block ${b.status==='yard'?'bg-green-900/50 text-green-300':'bg-orange-900/50 text-orange-300'}">${b.status === 'yard' ? 'Available' : 'On Site'}</div>
+          ${b.jobId ? `<div class="text-xs text-stone-400 mt-1">Job: ${b.jobId}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderJobs() {
+      const el = document.getElementById('jobs-list');
+      el.innerHTML = state.jobs.map(j => `
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030]">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-bold">${j.name}</div>
+              <div class="text-xs text-stone-400">${j.package || ''} • ${j.address || ''}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm font-bold text-[#A3C78C]">$${(j.total||0).toFixed(2)}</div>
+              <div class="text-xs text-stone-400">${j.date || ''}</div>
+            </div>
+          </div>
+          <div class="mt-2 flex flex-wrap gap-2 text-xs">
+            <span class="px-2 py-1 rounded bg-[#232B21]">${j.status || 'Scheduled'}</span>
+            <span class="px-2 py-1 rounded bg-[#232B21]">Bin: ${j.bin || '—'}</span>
+            ${j.overage > 0 ? `<span class="px-2 py-1 rounded bg-red-900/50">Overage: $${j.overage}</span>` : ''}
+          </div>
+          <div class="mt-2">
+            <button onclick="calcOverage('${j.id}')" class="text-xs px-2 py-1 rounded border border-[#3B5030] hover:bg-[#232B21]">Calc Overage</button>
+          </div>
+        </div>
+      `).join('') || '<p class="text-stone-500">No jobs yet.</p>';
+    }
+
+    function renderCustomers() {
+      const q = (document.getElementById('cust-search')?.value || '').toLowerCase();
+      const el = document.getElementById('customers-list');
+      const filtered = state.customers.filter(c =>
+        !q || c.name.toLowerCase().includes(q) || (c.phone||'').includes(q) || (c.email||'').toLowerCase().includes(q)
+      );
+      el.innerHTML = filtered.map(c => `
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030] cursor-pointer hover:border-[#4A633C]" onclick="openCustomer('${c.id}')">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-bold">${c.name}</div>
+              <div class="text-xs text-stone-400">${c.phone || ''} • ${c.email || ''}</div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs px-2 py-1 rounded bg-[#232B21]">${c.type || 'Homeowner'}</span>
+              ${c.balance > 0 ? `<div class="text-xs text-red-400 mt-1">Balance: $${c.balance.toFixed(2)}</div>` : ''}
+            </div>
+          </div>
+          <div class="text-xs text-stone-500 mt-2">${(c.addresses||[]).length} address(es) • ${c.customPrice ? 'Custom: $'+c.customPrice : 'Standard pricing'}</div>
+        </div>
+      `).join('') || '<p class="text-stone-500">No customers yet. Click "+ New Customer" to add one.</p>';
+    }
+
+    function openCustomer(id) {
+      const c = state.customers.find(x => x.id === id);
+      if (!c) return;
+      document.getElementById('modal-name').textContent = c.name;
+      document.getElementById('modal-body').innerHTML = `
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="text-xs text-stone-400">Phone</label><input id="m-phone" value="${c.phone||''}" class="w-full px-2 py-1 rounded bg-[#0F1410] border border-[#3B5030] text-sm" /></div>
+          <div><label class="text-xs text-stone-400">Email</label><input id="m-email" value="${c.email||''}" class="w-full px-2 py-1 rounded bg-[#0F1410] border border-[#3B5030] text-sm" /></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="text-xs text-stone-400">Type</label>
+            <select id="m-type" class="w-full px-2 py-1 rounded bg-[#0F1410] border border-[#3B5030] text-sm">
+              <option ${c.type==='Homeowner'?'selected':''}>Homeowner</option>
+              <option ${c.type==='Contractor'?'selected':''}>Contractor</option>
+              <option ${c.type==='First Responder'?'selected':''}>First Responder</option>
+            </select>
+          </div>
+          <div><label class="text-xs text-stone-400">Custom Price</label>
+            <input id="m-price" type="number" value="${c.customPrice||''}" placeholder="Blank = standard" class="w-full px-2 py-1 rounded bg-[#0F1410] border border-[#3B5030] text-sm" />
+          </div>
+        </div>
+        <div><label class="text-xs text-stone-400">Open Balance</label>
+          <input id="m-balance" type="number" step="0.01" value="${c.balance||0}" class="w-full px-2 py-1 rounded bg-[#0F1410] border border-[#3B5030] text-sm" />
+        </div>
+        <div>
+          <label class="text-xs text-stone-400">Addresses & Placement Notes</label>
+          <div id="addr-list" class="space-y-2 mt-1">
+            ${(c.addresses||[]).map((a,i) => `
+              <div class="bg-[#0F1410] p-2 rounded border border-[#3B5030]">
+                <input value="${a.street||''}" placeholder="Street address" class="w-full text-xs px-2 py-1 rounded bg-[#1A2018] border border-[#3B5030] mb-1" data-idx="${i}" data-field="street" />
+                <input value="${a.notes||''}" placeholder="Gate code, placement notes..." class="w-full text-xs px-2 py-1 rounded bg-[#1A2018] border border-[#3B5030]" data-idx="${i}" data-field="notes" />
+              </div>
+            `).join('')}
+          </div>
+          <button onclick="addAddress('${c.id}')" class="mt-2 text-xs px-3 py-1 rounded border border-[#3B5030]">+ Add Address</button>
+        </div>
+        <div>
+          <label class="text-xs text-stone-400">Job History</label>
+          <div class="text-xs text-stone-500 mt-1">${(c.jobs||[]).map(j => `${j.date}: ${j.package} — $${j.total}`).join('<br>') || 'No jobs yet'}</div>
+        </div>
+        <button onclick="saveCustomer('${c.id}')" class="w-full py-2 rounded bg-[#4A633C] text-white font-bold text-sm">Save Changes</button>
+      `;
+      document.getElementById('cust-modal').classList.remove('hidden');
+    }
+
+    function closeModal() { document.getElementById('cust-modal').classList.add('hidden'); }
+
+    function addNewCustomer() {
+      const name = prompt('Customer name:');
+      if (!name) return;
+      const id = Date.now().toString();
+      state.customers.push({ id, name, phone: '', email: '', type: 'Homeowner', balance: 0, customPrice: null, addresses: [], jobs: [] });
+      save();
+      renderCustomers();
+      openCustomer(id);
+    }
+
+    function addAddress(id) {
+      const c = state.customers.find(x => x.id === id);
+      if (!c.addresses) c.addresses = [];
+      c.addresses.push({ street: '', notes: '' });
+      save();
+      openCustomer(id);
+    }
+
+    function saveCustomer(id) {
+      const c = state.customers.find(x => x.id === id);
+      c.phone = document.getElementById('m-phone').value;
+      c.email = document.getElementById('m-email').value;
+      c.type = document.getElementById('m-type').value;
+      c.customPrice = parseFloat(document.getElementById('m-price').value) || null;
+      c.balance = parseFloat(document.getElementById('m-balance').value) || 0;
+      document.querySelectorAll('#addr-list input').forEach(inp => {
+        const idx = +inp.dataset.idx;
+        const field = inp.dataset.field;
+        if (c.addresses[idx]) c.addresses[idx][field] = inp.value;
+      });
+      save();
+      closeModal();
+      renderCustomers();
+    }
+
+    function renderQuotes() {
+      const el = document.getElementById('quotes-list');
+      el.innerHTML = state.quotes.map(q => `
+        <div class="bg-[#1A2018] p-3 rounded-xl border border-[#3B5030] flex justify-between items-center">
+          <div>
+            <div class="font-bold text-sm">${q.name} — $${q.amount}</div>
+            <div class="text-xs text-stone-400">${q.note || ''} • ${q.date}</div>
+          </div>
+          <select onchange="updateQuoteStatus('${q.id}', this.value)" class="text-xs px-2 py-1 rounded bg-[#0F1410] border border-[#3B5030]">
+            <option ${q.status==='Sent'?'selected':''}>Sent</option>
+            <option ${q.status==='Followed Up'?'selected':''}>Followed Up</option>
+            <option ${q.status==='Won'?'selected':''}>Won</option>
+            <option ${q.status==='Lost'?'selected':''}>Lost</option>
+          </select>
+        </div>
+      `).join('') || '<p class="text-stone-500">No quotes yet.</p>';
+    }
+
+    function addQuote() {
+      const name = document.getElementById('q-name').value;
+      if (!name) return alert('Enter a customer name');
+      state.quotes.unshift({
+        id: Date.now().toString(),
+        name, phone: document.getElementById('q-phone').value,
+        amount: document.getElementById('q-amount').value,
+        note: document.getElementById('q-note').value,
+        status: 'Sent', date: new Date().toLocaleDateString()
+      });
+      save();
+      document.getElementById('q-name').value = '';
+      document.getElementById('q-phone').value = '';
+      document.getElementById('q-amount').value = '';
+      document.getElementById('q-note').value = '';
+      renderQuotes();
+    }
+
+    function updateQuoteStatus(id, status) {
+      const q = state.quotes.find(x => x.id === id);
+      if (q) q.status = status;
+      save();
+    }
+
+    function renderMessages() {
+      const el = document.getElementById('messages-list');
+      el.innerHTML = state.messages.map(m => `
+        <div class="bg-[#1A2018] p-3 rounded-xl border border-[#3B5030]">
+          <div class="text-xs text-stone-400">${m.time} • ${m.template || 'Note'}</div>
+          <div class="text-sm mt-1">${m.body}</div>
+        </div>
+      `).join('') || '<p class="text-stone-500">No messages logged.</p>';
+    }
+
+    function fillTemplate() {
+      const t = document.getElementById('msg-template').value;
+      if (TEMPLATES[t]) document.getElementById('msg-body').value = TEMPLATES[t];
+    }
+
+    function logMessage() {
+      const body = document.getElementById('msg-body').value;
+      if (!body) return;
+      state.messages.unshift({ time: new Date().toLocaleString(), template: document.getElementById('msg-template').value, body });
+      save();
+      document.getElementById('msg-body').value = '';
+      document.getElementById('msg-template').value = '';
+      renderMessages();
+    }
+
+    function addJob() {
+      const name = document.getElementById("job-name").value;
+      if (!name) return alert("Enter a customer name");
+      const pkg = document.getElementById("job-package").value;
+      const prices = { "Weekend Warrior": 325, "Standard 5-Day": 395, "Extended 10-Day": 475 };
+      const job = {
+        id: "j" + Date.now(),
+        name,
+        phone: document.getElementById("job-phone").value,
+        address: document.getElementById("job-address").value,
+        package: pkg,
+        date: document.getElementById("job-date").value || new Date().toISOString().split("T")[0],
+        total: parseFloat(document.getElementById("job-total").value) || prices[pkg] || 0,
+        status: "Scheduled",
+        bin: "—",
+        overage: 0
+      };
+      state.jobs.unshift(job);
+      save();
+      document.getElementById("job-name").value = "";
+      document.getElementById("job-phone").value = "";
+      document.getElementById("job-address").value = "";
+      document.getElementById("job-total").value = "";
+      renderJobs();
+    }
+
+    function calcOverage(jobId) {
+      const lbs = prompt('Enter total weight in pounds:');
+      if (!lbs) return;
+      const over = Math.max(0, parseInt(lbs) - 4000);
+      const fee = +(over / 2000 * 95).toFixed(2);
+      const job = state.jobs.find(j => j.id === jobId);
+      if (job) { job.overage = fee; job.weight = parseInt(lbs); save(); renderJobs(); }
+      alert(`Overage: ${over} lbs over 2 tons = $${fee}`);
+    }
+
+    function renderReports() {
+      const totalJobs = state.jobs.length;
+      const revenue = state.jobs.reduce((s,j) => s + (j.total||0), 0);
+      const openBalances = state.customers.reduce((s,c) => s + (c.balance||0), 0);
+      const openQuotes = state.quotes.filter(q => q.status === 'Sent' || q.status === 'Followed Up').length;
+      document.getElementById('reports-content').innerHTML = `
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030] text-center">
+          <div class="text-2xl font-black text-[#A3C78C]">${totalJobs}</div>
+          <div class="text-xs text-stone-400">Total Jobs</div>
+        </div>
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030] text-center">
+          <div class="text-2xl font-black text-[#A3C78C]">$${revenue.toFixed(0)}</div>
+          <div class="text-xs text-stone-400">Revenue</div>
+        </div>
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030] text-center">
+          <div class="text-2xl font-black ${openBalances>0?'text-red-400':'text-[#A3C78C]'}">$${openBalances.toFixed(0)}</div>
+          <div class="text-xs text-stone-400">Open Balances</div>
+        </div>
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030] text-center">
+          <div class="text-2xl font-black text-[#A3C78C]">${openQuotes}</div>
+          <div class="text-xs text-stone-400">Open Quotes</div>
+        </div>
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030] text-center">
+          <div class="text-2xl font-black text-[#A3C78C]">${state.customers.length}</div>
+          <div class="text-xs text-stone-400">Customers</div>
+        </div>
+        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030] text-center">
+          <div class="text-2xl font-black text-[#A3C78C]">${state.bins.filter(b=>b.status==='yard').length}/${state.bins.length}</div>
+          <div class="text-xs text-stone-400">Bins Available</div>
+        </div>
+      `;
+    }
+
+    // Seed sample data if empty
+    if (state.customers.length === 0) {
+      state.customers.push({
+        id: 'c1', name: 'Marcus Vance', phone: '(330) 555-0194', email: 'mvance@example.com',
+        type: 'Contractor', balance: 0, customPrice: 375,
+        addresses: [{ street: '4182 Mahoning Ave, Austintown', notes: 'Place by garage. Gate code: 1234' }],
+        jobs: [{ date: '2026-11-15', package: 'Standard 5-Day', total: 395 }]
+      });
+      state.jobs.push({
+        id: 'j1', name: 'Marcus Vance', package: 'Standard 5-Day', address: '4182 Mahoning Ave',
+        date: '2026-11-15', total: 395, status: 'On-Site', bin: 'BIN-01', overage: 0
+      });
+      state.bins[0].status = 'on-site';
+      state.bins[0].jobId = 'j1';
+      save();
+    }
+  </script>
+</body>
+</html>
