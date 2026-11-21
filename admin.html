@@ -158,6 +158,10 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
       messages: []
     };
 
+    
+    let feesStore = JSON.parse(localStorage.getItem('oi_fees') || '{}');
+    function saveFees() { localStorage.setItem('oi_fees', JSON.stringify(feesStore)); }
+
     function save() { localStorage.setItem('oi_admin', JSON.stringify(state)); }
 
     function checkPw() {
@@ -188,7 +192,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
       if (error) console.error('Load bookings error', error);
       if (data) {
         state.jobs = data.map(b => {
-          const existing = state.jobs.find(j => j.id === b.id) || {};
+          const f = feesStore[b.id] || {};
           return {
             id: b.id,
             name: b.Name || b.name,
@@ -199,14 +203,14 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
             total: b.Total || b.total || 0,
             status: b.Status || b.status || 'Confirmed',
             notes: b.Notes || b.notes || '',
-            bin: existing.bin || '—',
-            weight: existing.weight || 0,
-            overage: existing.overage || 0,
-            extraDays: existing.extraDays || 0,
-            daysFee: existing.daysFee || 0,
-            boards: existing.boards || 0,
-            boardsFee: existing.boardsFee || 0,
-            feesTotal: existing.feesTotal || 0
+            bin: f.bin || '—',
+            weight: f.weight || 0,
+            overage: f.overage || 0,
+            extraDays: f.extraDays || 0,
+            daysFee: f.daysFee || 0,
+            boards: f.boards || 0,
+            boardsFee: f.boardsFee || 0,
+            feesTotal: f.feesTotal || 0
           };
         });
         save();
@@ -554,18 +558,22 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
 
     
     function updateFees(jobId, field, value) {
-      const job = state.jobs.find(j => j.id === jobId);
+      const job = state.jobs.find(j => String(j.id) === String(jobId));
       if (!job) return;
-      if (field === 'weight') job.weight = parseInt(value) || 0;
-      if (field === 'days') job.extraDays = parseInt(value) || 0;
-      if (field === 'boards') job.boards = parseInt(value) || 0;
+      if (!feesStore[jobId]) feesStore[jobId] = {};
+      if (field === 'weight') feesStore[jobId].weight = parseInt(value) || 0;
+      if (field === 'days') feesStore[jobId].extraDays = parseInt(value) || 0;
+      if (field === 'boards') feesStore[jobId].boards = parseInt(value) || 0;
       
-      const overLbs = Math.max(0, (job.weight || 0) - 4000);
-      job.overage = +(overLbs / 2000 * 95).toFixed(2);
-      job.daysFee = (job.extraDays || 0) * 15;
-      job.boardsFee = job.boards ? 20 : 0;
-      job.feesTotal = job.overage + job.daysFee + job.boardsFee;
-      save();
+      const f = feesStore[jobId];
+      const overLbs = Math.max(0, (f.weight || 0) - 4000);
+      f.overage = +(overLbs / 2000 * 95).toFixed(2);
+      f.daysFee = (f.extraDays || 0) * 15;
+      f.boardsFee = f.boards ? 20 : 0;
+      f.feesTotal = f.overage + f.daysFee + f.boardsFee;
+      
+      Object.assign(job, f);
+      saveFees();
       renderJobs();
     }
 
