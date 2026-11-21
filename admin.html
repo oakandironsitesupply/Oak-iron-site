@@ -10,7 +10,7 @@
   <script>
     const SUPABASE_URL = 'https://ribqztgrxvnjsehchjph.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_pLFT-wV3uKWNDquv-hb0jQ_u1V6RN8c';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui','sans-serif'] } } } };</script>
   <style>.tab-active { background: #4A633C; color: white; border-color: #628050; }</style>
 </head>
@@ -183,7 +183,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
 
     
     async function loadBookings() {
-      const { data, error } = await supabase.from('bookings').select('*').order('create', { ascending: false });
+      const { data, error } = await sb.from('bookings').select('*').order('create', { ascending: false });
       if (error) console.error('Load bookings error', error);
       if (data) {
         state.jobs = data.map(b => ({
@@ -251,7 +251,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
     
     async function updateBinStatus(binId, status, jobId) {
       try {
-        await supabase.from('bins').upsert({ id: binId, Status: status, Job_id: jobId }, { onConflict: 'id' });
+        await sb.from('bins').upsert({ id: binId, Status: status, Job_id: jobId }, { onConflict: 'id' });
       } catch(e) { console.log('Bin update failed', e); }
     }
 

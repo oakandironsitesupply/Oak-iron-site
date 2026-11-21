@@ -12,7 +12,7 @@
   <script>
     const SUPABASE_URL = 'https://ribqztgrxvnjsehchjph.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_pLFT-wV3uKWNDquv-hb0jQ_u1V6RN8c';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     tailwind.config = {
       theme: {
@@ -346,7 +346,7 @@
       const dateInput = document.getElementById('date');
       if (!dateInput) return;
       try {
-        const { data } = await supabase.from('bins').select('*');
+        const { data } = await sb.from('bins').select('*');
         const bins = data || [];
         const availableCount = bins.filter(b => b.Status === 'yard' || b.status === 'yard').length;
         const statusEl = document.getElementById('avail-status');
@@ -364,7 +364,7 @@
     async function updateBinAvailability() {
       // Check Supabase for bin status
       try {
-        const { data } = await supabase.from('bins').select('*');
+        const { data } = await sb.from('bins').select('*');
         if (data && data.length) {
           state.bins = data.map(b => ({ id: b.id, status: b.status || 'yard', jobId: b.job_id }));
         }
@@ -485,7 +485,7 @@
 
       // Save to Supabase
       try {
-        await supabase.from('bookings').insert({
+        await sb.from('bookings').insert({
           Name: booking.name,
           Phone: booking.phone,
           Email: booking.email,
