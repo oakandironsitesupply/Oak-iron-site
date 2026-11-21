@@ -273,7 +273,13 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
               <div class="text-xs text-stone-400">${j.package || ''} • ${j.address || ''}</div>
             </div>
             <div class="text-right">
-              <div class="text-sm font-bold text-[#A3C78C]">$${(j.total||0).toFixed(2)}</div>
+              <div class="text-right text-xs space-y-1">
+                <div class="text-stone-400">Base: $${(j.total||0).toFixed(2)}</div>
+                ${j.overage > 0 ? `<div class="text-red-300">Overage: $${j.overage.toFixed(2)}</div>` : ''}
+                ${j.daysFee > 0 ? `<div class="text-orange-300">Days: $${j.daysFee.toFixed(2)}</div>` : ''}
+                ${j.boardsFee > 0 ? `<div class="text-yellow-300">Boards: $${j.boardsFee.toFixed(2)}</div>` : ''}
+                <div class="text-sm font-bold text-[#A3C78C]">Total: $${((j.total||0) + (j.feesTotal||0)).toFixed(2)}</div>
+              </div>
               <div class="text-xs text-stone-400">${j.date || ''}</div>
             </div>
           </div>
@@ -289,7 +295,24 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
               <option value="BIN-02" ${j.bin==='BIN-02'?'selected':''}>BIN-02</option>
               <option value="BIN-03" ${j.bin==='BIN-03'?'selected':''}>BIN-03</option>
             </select>
-            <button onclick="calcOverage('${j.id}')" class="text-xs px-2 py-1 rounded border border-[#3B5030] hover:bg-[#232B21]">Calc Overage</button>
+            <div class="mt-2 space-y-1 text-xs">
+              <div class="flex items-center gap-2">
+                <input type="number" placeholder="Weight (lbs)" value="${j.weight||''}" onchange="updateFees('${j.id}', 'weight', this.value)" class="w-24 px-2 py-1 rounded bg-[#232B21] border border-[#3B5030]" />
+                <span class="text-stone-400">lbs</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <select onchange="updateFees('${j.id}', 'days', this.value)" class="px-2 py-1 rounded bg-[#232B21] border border-[#3B5030]">
+                  <option value="0" ${!j.extraDays?'selected':''}>Extra Days</option>
+                  ${[1,2,3,4,5,6,7].map(d => `<option value="${d}" ${j.extraDays==d?'selected':''}>${d} day${d>1?'s':''}</option>`).join('')}
+                </select>
+              </div>
+              <div class="flex items-center gap-2">
+                <select onchange="updateFees('${j.id}', 'boards', this.value)" class="px-2 py-1 rounded bg-[#232B21] border border-[#3B5030]">
+                  <option value="0" ${!j.boards?'selected':''}>Driveway Boards</option>
+                  <option value="1" ${j.boards==1?'selected':''}>Yes ($20)</option>
+                </select>
+              </div>
+            </div>
             <button onclick="deleteJob('${j.id}')" class="text-xs px-2 py-1 rounded border border-red-800 text-red-300 hover:bg-red-900/50">Delete</button>
           </div>
         </div>
@@ -516,6 +539,23 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
       document.getElementById("job-phone").value = "";
       document.getElementById("job-address").value = "";
       document.getElementById("job-total").value = "";
+      renderJobs();
+    }
+
+    
+    function updateFees(jobId, field, value) {
+      const job = state.jobs.find(j => j.id === jobId);
+      if (!job) return;
+      if (field === 'weight') job.weight = parseInt(value) || 0;
+      if (field === 'days') job.extraDays = parseInt(value) || 0;
+      if (field === 'boards') job.boards = parseInt(value) || 0;
+      
+      const overLbs = Math.max(0, (job.weight || 0) - 4000);
+      job.overage = +(overLbs / 2000 * 95).toFixed(2);
+      job.daysFee = (job.extraDays || 0) * 15;
+      job.boardsFee = job.boards ? 20 : 0;
+      job.feesTotal = job.overage + job.daysFee + job.boardsFee;
+      save();
       renderJobs();
     }
 
