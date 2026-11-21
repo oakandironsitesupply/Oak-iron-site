@@ -166,6 +166,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
         document.getElementById('admin-view').classList.remove('hidden');
         renderAll();
       loadBookings();
+      setInterval(loadBookings, 30000);
       } else {
         document.getElementById('pw-error').classList.remove('hidden');
       }
