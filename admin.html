@@ -296,21 +296,9 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
             <div class="min-w-0">
               <div class="font-bold truncate">${j.name}</div>
               <div class="text-xs text-stone-400 truncate">${j.package || ''} • ${j.address || ''}</div>
+              <div class="text-xs text-stone-500">${j.date || ''}</div>
             </div>
             <button onclick="deleteJob('${j.id}')" class="text-xs px-2 py-1 rounded border border-red-800 text-red-300 hover:bg-red-900/50 shrink-0">Delete</button>
-          </div>
-          <div class="flex justify-between items-end gap-4">
-            <div class="flex flex-wrap gap-2 text-xs">
-              <div class="text-right text-xs space-y-1 shrink-0">
-                <div class="text-stone-400">Package: $${((j.total||0) / 1.0675).toFixed(2)}</div>
-                <div class="text-stone-400">Tax: $${((j.total||0) - (j.total||0) / 1.0675).toFixed(2)}</div>
-                ${j.overage > 0 ? `<div class="text-red-300">Weight: $${j.overage.toFixed(2)}</div>` : ''}
-                ${j.daysFee > 0 ? `<div class="text-orange-300">Days: $${j.daysFee.toFixed(2)}</div>` : ''}
-                ${j.boardsFee > 0 ? `<div class="text-yellow-300">Boards: $${j.boardsFee.toFixed(2)}</div>` : ''}
-                <div class="text-sm font-bold text-[#A3C78C] border-t border-[#3B5030] pt-1">Total: $${((j.total||0) + (j.feesTotal||0)).toFixed(2)}</div>
-              </div>
-              <div class="text-xs text-stone-400">${j.date || ''}</div>
-            </div>
           </div>
           <div class="flex flex-wrap gap-2 text-xs">
             <span class="px-2 py-1 rounded bg-[#232B21]">${j.status || 'Scheduled'}</span>
