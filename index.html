@@ -346,14 +346,15 @@
       const dateInput = document.getElementById('date');
       if (!dateInput) return;
       try {
-        const { data } = await sb.from('bins').select('*');
+        const { data } = await sb.from('Bins').select('*');
         const bins = data || [];
         const availableCount = bins.filter(b => b.Status === 'yard' || b.status === 'yard').length;
         const statusEl = document.getElementById('avail-status');
         const bookBtn = document.querySelector('#step4 button');
-        if (availableCount === 0) {
-          if (statusEl) statusEl.textContent = 'All dumpsters booked — Call (330) 333-5414';
-          if (bookBtn) { bookBtn.disabled = true; bookBtn.textContent = 'Call to Book'; }
+        // If no bins configured yet, allow booking
+        if (bins.length === 0 || availableCount > 0) {
+          if (statusEl) statusEl.textContent = (bins.length === 0 ? '3' : availableCount) + ' Dumpster' + ((bins.length === 0 || availableCount>1)?'s':'') + ' Available';
+          if (bookBtn) { bookBtn.disabled = false; bookBtn.textContent = 'Submit Order & Request Invoice'; }
         } else {
           if (statusEl) statusEl.textContent = availableCount + ' Dumpster' + (availableCount>1?'s':'') + ' Available';
           if (bookBtn) { bookBtn.disabled = false; bookBtn.textContent = 'Submit Order & Request Invoice'; }
@@ -364,7 +365,7 @@
     async function updateBinAvailability() {
       // Check Supabase for bin status
       try {
-        const { data } = await sb.from('bins').select('*');
+        const { data } = await sb.from('Bins').select('*');
         if (data && data.length) {
           state.bins = data.map(b => ({ id: b.id, status: b.status || 'yard', jobId: b.job_id }));
         }
@@ -485,7 +486,7 @@
 
       // Save to Supabase
       try {
-        await sb.from('bookings').insert({
+        await sb.from('Bookings').insert({
           Name: booking.name,
           Phone: booking.phone,
           Email: booking.email,
