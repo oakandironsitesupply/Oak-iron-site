@@ -184,7 +184,7 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
 
     
     async function loadBookings() {
-      const { data, error } = await sb.from('Bookings').select('*').order('create', { ascending: false });
+      const { data, error } = await sb.from('Bookings').select('*').order('id', { ascending: false });
       if (error) console.error('Load bookings error', error);
       if (data) {
         state.jobs = data.map(b => ({
