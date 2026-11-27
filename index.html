@@ -112,7 +112,7 @@
               <div class="bg-white p-2 rounded border">5 Full Days</div>
               <div class="bg-white p-2 rounded border">2.0 Tons Included</div>
               <div class="bg-white p-2 rounded border">$95/ton Overage</div>
-              <div class="bg-white p-2 rounded border">$15/day Extra</div>
+              <div class="bg-white p-2 rounded border">$20/day Extra</div>
             </div>
             <a href="#packages" class="block mt-4 text-center py-3 rounded-xl bg-[#4A633C] text-white font-bold">View Packages</a>
           </div>
@@ -124,27 +124,27 @@
     <section id="packages" class="py-16 bg-[#F7F7F4]">
       <div class="max-w-7xl mx-auto px-4">
         <h2 class="text-3xl font-black text-center mb-2">15-Yard Roll-Off Packages</h2>
-        <p class="text-center text-stone-600 mb-10">16' × 6'11" × 4' • ~4–5 pickup truck loads</p>
+        <p class="text-center text-stone-600 mb-10">16' × 6'11" × 4' • 4.5–6 pickup truck loads</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="package-cards">
           <div class="pkg-card bg-[#1A2018] text-white p-6 rounded-2xl border border-[#3B5030] shadow" data-pkg="weekend">
             <div class="text-xs font-bold uppercase text-stone-300">Fri–Mon • 1.0 Ton</div>
             <h3 class="text-xl font-black mt-1">Weekend Warrior</h3>
             <div class="text-4xl font-black my-4">$325</div>
-            <div class="text-xs text-stone-400 mb-3">Extra days: $15/day</div>
+            <div class="text-xs text-stone-400 mb-3">Extra days: $20/day</div>
             <button onclick="selectPackageCard('weekend')" class="w-full py-3 rounded-xl bg-[#232B21] hover:bg-[#2E382B] text-white font-bold border border-[#3B5030]">Select</button>
           </div>
           <div class="pkg-card bg-[#1A2018] text-white p-6 rounded-2xl border border-[#3B5030] shadow" data-pkg="standard">
             <div class="text-xs font-black uppercase text-stone-300">Most Popular • 2.0 Tons</div>
             <h3 class="text-xl font-black mt-1">Standard 5-Day</h3>
             <div class="text-4xl font-black my-4">$395</div>
-            <div class="text-xs text-stone-400 mb-3">Extra days: $15/day</div>
+            <div class="text-xs text-stone-400 mb-3">Extra days: $20/day</div>
             <button onclick="selectPackageCard('standard')" class="w-full py-3 rounded-xl bg-[#232B21] hover:bg-[#2E382B] text-white font-bold border border-[#3B5030]">Select</button>
           </div>
           <div class="pkg-card bg-[#1A2018] text-white p-6 rounded-2xl border border-[#3B5030] shadow" data-pkg="extended">
             <div class="text-xs font-bold uppercase text-stone-300">10 Days • 2.5 Tons</div>
             <h3 class="text-xl font-black mt-1">Extended 10-Day</h3>
             <div class="text-4xl font-black my-4">$475</div>
-            <div class="text-xs text-stone-400 mb-3">Extra days: $15/day</div>
+            <div class="text-xs text-stone-400 mb-3">Extra days: $20/day</div>
             <button onclick="selectPackageCard('extended')" class="w-full py-3 rounded-xl bg-[#232B21] hover:bg-[#2E382B] text-white font-bold border border-[#3B5030]">Select</button>
           </div>
         </div>
@@ -170,7 +170,7 @@
               <ul class="mt-3 space-y-1 text-sm">
                 <li>• Exterior: 16 feet long × 6'11" wide (top) × 4 feet tall</li>
                 <li>• Reinforced steel construction with rear swing door and rollers</li>
-                <li>• Capacity: 15 cubic yards (~4–5 full-size pickup truck loads or 75–100 trash bags)</li>
+                <li>• Capacity: 15 cubic yards (4.5–6 full-size pickup truck loads or 75–100 trash bags)</li>
                 <li>• Rear walk-in / swing door for easy loading</li>
                 <li>• Fits most residential driveways</li>
               </ul>
@@ -232,7 +232,7 @@
             <li><strong>Weight:</strong> Package includes listed tonnage. $95/ton prorated overage from certified scale ticket.</li>
             <li><strong>Delivery window:</strong> Standard 8:00 AM – 1:00 PM. Same/next-day available based on fleet (typically noon cutoff for next-day).</li>
             <li><strong>If you’re not home:</strong> Driver places per your notes or best judgment and we send a photo confirmation.</li>
-            <li><strong>Extra days:</strong> $15/day (max 14 additional). Call to extend.</li>
+            <li><strong>Extra days:</strong> $20/day (max 14 additional). Call to extend.</li>
             <li><strong>Loading:</strong> Debris must remain level with or below the top rim (DOT rules).</li>
             <li><strong>Cancellation / Reschedule:</strong> Free up to 24 hours before scheduled drop. Call (330) 333-5414.</li>
             <li><strong>Payment:</strong> Invoice must be paid in full prior to delivery. We keep payment information on file to cover any overages. Credit/debit card, cash, or ACH for contractors. HERO20 discount applied at checkout (Active & Retired First Responders and Active Duty Military or Veterans only).</li>
@@ -271,7 +271,7 @@
             </div>
             <div class="flex items-center gap-4">
               <label>Driveway Boards (+$20)</label>
-              <button onclick="adj('boards',-1)">−</button><span id="boards">0</span><button onclick="adj('boards',1)">+</button>
+              <button type="button" onclick="toggleBoards()" id="boards-btn" class="px-4 py-2 rounded border border-[#3B5030] bg-[#1A2018]">No</button>
             </div>
             <input id="promo" placeholder="HERO20" class="px-3 py-2 rounded bg-[#1A2018] border" />
             <button onclick="applyPromo()" class="px-4 py-2 rounded bg-[#C85A28]">Apply</button>
@@ -433,7 +433,13 @@
       }
       updateTotal();
     }
-    function adj(k,d) { state.boards = Math.max(0, Math.min(1, state.boards+d)); document.getElementById('boards').textContent = state.boards; updateTotal(); }
+    function toggleBoards() {
+      state.boards = state.boards ? 0 : 1;
+      const btn = document.getElementById('boards-btn');
+      btn.textContent = state.boards ? 'Yes' : 'No';
+      btn.className = state.boards ? 'px-4 py-2 rounded border border-[#A3C78C] bg-[#4A633C] text-white font-bold' : 'px-4 py-2 rounded border border-[#3B5030] bg-[#1A2018]';
+      updateTotal();
+    }
     function applyPromo() {
       const c = document.getElementById('promo').value.trim().toUpperCase();
       state.discount = c==='HERO20' ? 20 : 0;
@@ -447,7 +453,7 @@
       const distanceFee = 0; // No automatic fee — outside zone must call for quote
       const boardsFee = state.boards * 20;
       const sub = p.price + boardsFee + distanceFee - state.discount;
-      const tax = +(sub * 0.0725).toFixed(2);
+      const tax = +(sub * 0.0675).toFixed(2);
       const total = sub + tax;
       document.getElementById('total-display').textContent = '$' + total.toFixed(2);
       
@@ -491,7 +497,7 @@
       if(!document.getElementById('agree').checked) return alert('Please agree to the rental policies');
       const p = PACKAGES[state.pkg];
       const sub = p.price + (state.boards*20) - state.discount;
-      const tax = +(sub*0.0725).toFixed(2);
+      const tax = +(sub*0.0675).toFixed(2);
       const id = 'OI-'+Date.now().toString().slice(-6);
       const freeBin = state.bins.find(b=>b.status==='yard');
       if(freeBin){ freeBin.status='reserved'; freeBin.jobId=id; }
@@ -605,80 +611,14 @@
       if (!sel) return;
       sel.innerHTML = state.bookings.map(j => `<option value="${j.id}">${j.id} — ${j.name}</option>`).join('') || '<option>No jobs</option>';
     }
-    function sendCustomerMessage() {
-      const jobId = document.getElementById('msg-job').value;
-      const template = document.getElementById('msg-template').value;
-      const body = document.getElementById('msg-body').value.trim();
-      const photo = document.getElementById('msg-photo').value.trim();
-      const job = state.bookings.find(j => j.id === jobId);
-      if (!job) return alert('Select a job');
-      const templates = {
-        drop: `Hi ${job.name}, your dumpster has been delivered. Placement photo noted.`,
-        pickup: `Hi ${job.name}, your pickup is scheduled. Please ensure the area is clear.`,
-        weight: `Hi ${job.name}, your weight ticket is ready. Any overage will be billed at $95/ton.`,
-        custom: body || 'Update from Oak & Iron.'
-      };
-      const text = templates[template] || body;
-      const msg = {
-        id: 'MSG-' + Date.now().toString().slice(-5),
-        jobId, customer: job.name, phone: job.phone,
-        text, photoNote: photo, time: new Date().toLocaleString()
-      };
-      messages.unshift(msg);
-      saveMessages();
-      document.getElementById('msg-status').textContent = `Sent to ${job.name} (${job.phone})`;
-      document.getElementById('msg-status').classList.remove('hidden');
-      document.getElementById('msg-body').value = '';
-      document.getElementById('msg-photo').value = '';
-      renderMessages();
-    }
-    function renderMessages() {
-      const log = document.getElementById('messages-log');
-      if (!log) return;
-      log.innerHTML = messages.slice(0, 15).map(m => `
-        <div class="bg-[#1A2018] p-3 rounded border border-[#3B5030]">
-          <div class="flex justify-between text-xs text-stone-400"><span>${m.time}</span><span>${m.jobId}</span></div>
-          <div class="font-bold text-sm">${m.customer}</div>
-          <div class="text-sm mt-1">${m.text}</div>
-          ${m.photoNote ? `<div class="text-xs text-[#D96D3B] mt-1">Photo: ${m.photoNote}</div>` : ''}
-        </div>`).join('') || '<p class="text-stone-500">No messages yet.</p>';
-    }
-
-    function markPicked(id) {
-      const weight = prompt('Enter actual weight (lbs) from scale ticket:','2800');
-      if(!weight) return;
-      const j = state.bookings.find(b=>b.id===id);
-      if(!j) return;
-      const lbs = parseInt(weight);
-      const included = j.tons*2000;
-      const over = Math.max(0, lbs-included);
-      const overage = +(over/2000*95).toFixed(2);
-      j.weight = lbs; j.overage = overage; j.status = 'Complete';
-      const bin = state.bins.find(b=>b.id===j.bin);
-      if(bin){ bin.status='yard'; bin.jobId=null; }
-      save();
-      alert(`Pickup complete. Overage: $${overage.toFixed(2)} (${over} lbs over).`);
-      renderAdmin();
-      updateBinAvailability();
-      checkDateAvailability();
-    }
-    document.addEventListener('DOMContentLoaded', ()=>{
+        document.addEventListener('DOMContentLoaded', ()=>{
       const d = new Date(); d.setDate(d.getDate()+1);
       const dateIn = document.getElementById('date');
       if(dateIn) dateIn.value = d.toISOString().split('T')[0];
       updateTotal();
       updateBinAvailability();
       checkDateAvailability();
-      if(state.bookings.length===0){
-        state.bookings.push({
-          id:'OI-SAMPLE', status:'On-Site', bin:'BIN-01', package:'Standard 5-Day',
-          price:395, days:5, tons:2.0, name:'Marcus Vance', phone:'(330) 555-0194',
-          email:'mvance@example.com', address:'4182 Mahoning Ave, Austintown, OH 44515',
-          date:new Date().toISOString().split('T')[0], total:423.64, weight:null, overage:0, notes:''
-        });
-        state.bins[0].status='on-site'; state.bins[0].jobId='OI-SAMPLE';
-        save();
-      }
+
     });
   </script>
 </body>
