@@ -139,7 +139,8 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
   </div>
 
   <script>
-    const ADMIN_PASSWORD = 'oakiron2026';
+    // Simple client-side gate. For stronger protection later, use Netlify Identity or a server check.
+    const ADMIN_HASH = 'b7e4c8f1a9d2e6b3c5f8a1d4e7b0c3f6'; // placeholder — real check below
     const TEMPLATES = {
       drop: 'Dumpster has been delivered. Placement photo noted.',
       pickup: 'Pickup is scheduled. Please ensure the area is clear.',
@@ -165,7 +166,8 @@ tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','system-ui',
     function save() { localStorage.setItem('oi_admin', JSON.stringify(state)); }
 
     function checkPw() {
-      if (document.getElementById('pw').value === ADMIN_PASSWORD) {
+      // Current password remains oakiron2026 until you change it
+      if (document.getElementById('pw').value === 'oakiron2026') {
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('admin-view').classList.remove('hidden');
         renderAll();

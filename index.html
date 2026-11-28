@@ -563,64 +563,8 @@
 
 
       document.getElementById('wizard').innerHTML = `<div class="text-center py-10"><h3 class="text-2xl font-black text-[#A3C78C]">Booking Confirmed!</h3><p class="mt-2">Receipt #${id}</p><p class="text-sm mt-4">Your order is submitted. We will send a QuickBooks invoice to the contact provided. Invoice must be paid prior to delivery. Payment information is kept on file for any overages. Call (330) 333-5414 with questions.</p></div>`;
-      renderAdmin();
       updateBinAvailability();
       checkDateAvailability();
-    }
-    function toggleAdmin() {
-      document.getElementById('customer-view').classList.toggle('hidden');
-      document.getElementById('admin-view').classList.toggle('hidden');
-      if(!document.getElementById('admin-view').classList.contains('hidden')) { renderAdmin(); populateMessageJobs(); renderMessages(); }
-    }
-    function switchTab(t) {
-      ['fleet','jobs','customers','reports','messages'].forEach(x=>document.getElementById('tab-'+x).classList.add('hidden'));
-      document.getElementById('tab-'+t).classList.remove('hidden');
-      if (t === 'messages') { populateMessageJobs(); renderMessages(); }
-      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-active'));
-      event.target.classList.add('tab-active');
-    }
-    function renderAdmin() {
-      document.getElementById('fleet-grid').innerHTML = state.bins.map(b=>`
-        <div class="bg-[#1A2018] p-4 rounded-xl border ${b.status==='yard'?'border-[#4A633C]':'border-[#C85A28]'}">
-          <div class="font-black">${b.id}</div>
-          <div class="text-xs mt-1">${b.status.toUpperCase()}</div>
-          ${b.jobId ? `<div class="text-[11px] text-stone-400 mt-1">Job ${b.jobId}</div>` : '<div class="text-[11px] text-[#A3C78C]">Ready in Yard</div>'}
-        </div>`).join('');
-      document.getElementById('fleet-pill').textContent = `${state.bins.filter(b=>b.status==='yard').length} Available`;
-      document.getElementById('jobs-list').innerHTML = state.bookings.map(j=>`
-        <div class="bg-[#1A2018] p-4 rounded-xl border border-[#3B5030]">
-          <div class="flex justify-between">
-            <span class="font-mono text-[#D96D3B]">${j.id}</span>
-            <span class="text-xs px-2 py-0.5 rounded ${j.status==='Confirmed'?'bg-[#4A633C]/30':'bg-[#C85A28]/20'}">${j.status}</span>
-          </div>
-          <div class="font-bold mt-1">${j.name} • ${j.package}</div>
-          <div class="text-xs text-stone-400">${j.address}</div>
-          <div class="text-xs">Drop: ${j.date} • Bin: ${j.bin} • $${j.total.toFixed(2)}</div>
-          ${j.notes ? `<div class="text-xs text-stone-400 mt-1">Notes: ${j.notes}</div>` : ''}
-          <div class="mt-2 flex gap-2">
-            <button onclick="markDropped('${j.id}')" class="text-xs px-2 py-1 rounded bg-[#4A633C]">Mark Dropped</button>
-            <button onclick="markPicked('${j.id}')" class="text-xs px-2 py-1 rounded bg-[#232B21] border">Mark Picked + Weight</button>
-          </div>
-        </div>`).join('') || '<p class="text-stone-500">No jobs yet.</p>';
-      const custs = [...new Map(state.bookings.map(b=>[b.email,b])).values()];
-      document.getElementById('customers-list').innerHTML = custs.map(c=>`<div class="bg-[#1A2018] p-3 rounded border text-sm">${c.name} • ${c.phone} • ${c.email}</div>`).join('') || '<p>No customers yet.</p>';
-      const active = state.bookings.filter(b=>b.status!=='Complete').length;
-      const rev = state.bookings.reduce((s,b)=>s+b.total,0);
-      document.getElementById('rep-active').textContent = active;
-      document.getElementById('rep-revenue').textContent = '$'+rev.toFixed(0);
-      document.getElementById('rep-available').textContent = state.bins.filter(b=>b.status==='yard').length;
-    }
-    function markDropped(id) {
-      const j = state.bookings.find(b=>b.id===id);
-      if(j){ j.status='On-Site'; const bin=state.bins.find(b=>b.id===j.bin); if(bin) bin.status='on-site'; save(); renderAdmin(); }
-    }
-    
-    let messages = JSON.parse(localStorage.getItem('oi_messages') || '[]');
-    function saveMessages() { localStorage.setItem('oi_messages', JSON.stringify(messages)); }
-    function populateMessageJobs() {
-      const sel = document.getElementById('msg-job');
-      if (!sel) return;
-      sel.innerHTML = state.bookings.map(j => `<option value="${j.id}">${j.id} — ${j.name}</option>`).join('') || '<option>No jobs</option>';
     }
         document.addEventListener('DOMContentLoaded', ()=>{
       const d = new Date(); d.setDate(d.getDate()+1);
